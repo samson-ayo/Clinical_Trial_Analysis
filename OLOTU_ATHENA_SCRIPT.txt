@@ -1,0 +1,115 @@
+ATHENA QUERY SCRIPT
+
+1) NUMBER OF STUDIES 
+
+SELECT COUNT (*) AS No_of_Studies
+FROM clinicaltrials;
+
+2)FREQUENCIES OF EACH TYPES OF STUDIES 
+
+SELECT type,
+COUNT(*) as frequency
+from clinicaltrials
+GROUP BY type
+ORDER BY
+COUNT(*) DESC;
+
+3)TOP FIVE CONDITIONS WITH THEIR FREQUENCY
+
+SELECT condition_n as Conditions, count(condition_n) as frequency
+FROM clinicaltrials
+CROSS JOIN UNNEST(split(clinicaltrials.Conditions, ',')) as v(Condition_n)
+WHERE Conditions NOT LIKE ''
+GROUP BY Condition_n
+ORDER BY
+frequency DESC
+LIMIT 5;
+
+4)FIVE MOST FREQUENT ROOTS
+
+CREATE TABLE IF NOT EXISTS Mesh_Root AS SELECT term, tree, SUBSTRING(tree, 1, 3) AS root
+from mesh
+
+SELECT *
+FROM mesh
+LIMIT 5
+
+CREATE TABLE IF NOT EXISTS Trail_conditions AS
+SELECT condition_n as Conditions
+FROM clinicaltrials
+CROSS JOIN UNNEST(split(clinicaltrials.Conditions, ',')) as v(Condition_n)
+WHERE Conditions NOT LIKE ''
+
+SELECT *
+FROM Trial_conditions
+
+SELECT root,COUNT(root) AS Frequency
+FROM Trial_conditions
+INNER JOIN Mesh_Root
+ON Trial_conditions.conditions = Mesh_Root.term
+GROUP BY root
+ORDER BY Frequency DESC
+LIMIT 5;
+
+5)10 MOST COMMON SPONSORS (NON-PHARMACEUTICAL COMPANIES)
+
+CREATE TABLE PHARMA_NEW AS SELECT replace(Pharma.Parent_Company, '"', '') as Parent_Company1
+FROM Pharma
+
+CREATE TABLE IF NOT EXISTS sponsors AS SELECT Sponsor
+FROM clinicaltrails
+
+SELECT Sponsor, COUNT(Sponsor) AS Frequency
+FROM Sponsors
+LEFT JOIN PHARMA_NEW
+ON Sponsors.Sponsor = PHARMA_NEW.Parent_Company1
+WHERE Parent_Company1 IS NULL
+GROUP BY Sponsor
+ORDER BY Frequency DESC
+LIMIT 10
+
+6) NNUMBER OF COMPLETED STUDIES
+
+CREATE TABLE IF NOT EXISTS Status1 AS SELECT split_part(Completion,'',1) AS Month,
+	regexp_extract(Completion, '[^ ,]+$') AS Year, Status
+FROM clinicaltrials
+WHERE(Status = 'Completed' AND CompletIon IS NOT NULL AND regexp_extract(Completion, '[^ ,]+$') = '2021')
+
+CREATE TABLE IF NOT EXISTS Completed_tab AS 
+SELECT month,year,count(*) AS Completed_Studies
+FROM Status1
+GROUP BY month,year
+ORDER BY CASE 
+WHEN month = 'Jan' THEN 1
+WHEN month = 'Feb' THEN 2
+WHEN month = 'Mar' THEN 3
+WHEN month = 'Apr' THEN 4
+WHEN month = 'May' THEN 5
+WHEN month = 'Jun' THEN 6
+WHEN month = 'Jul' THEN 7
+WHEN month = 'Aug' THEN 8
+WHEN month = 'Sep' THEN 9
+WHEN month = 'Oct' THEN 10
+WHEN month = 'Nov' THEN 11
+WHEN month = 'Dec' THEN 12
+ELSE 13 END ASC;
+
+SELECT month, completed_studies as year
+FROM Completed_tab
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
