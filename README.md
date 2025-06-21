@@ -1,4 +1,6 @@
-# Clinical_Trial_Analysis
+# Clinical Trial Data Analysis using Apache Spark, Databricks & AWS
+
+🔍 Project Overview
 
 This project focuses on the large-scale analysis of clinical trial datasets. The goal is to extract valuable insights by integrating clinical trial data with pharmaceutical company listings and condition hierarchy information. The analysis is conducted using Apache Spark (RDD and DataFrame APIs) on Databricks and further extended with AWS Redshift and Athena for scalable querying and reporting.
  
